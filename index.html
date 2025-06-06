@@ -2,6 +2,7 @@
 <html>
     <head>
         <meta charset="utf8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <style>
             body {
                 display: flex;
@@ -14,22 +15,30 @@
             }
             #ruffle {
                 position: relative;
-                width: 500px;
-                height: 500px;
+                width: 700px;
+                height: 700px;
                 border: 1px solid #ccc;
                 box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
                 background-color: #fff;
             }
             #btm {
-                width: 500px;
+                width: 100%;
                 height: 30px;
                 position: absolute;
-                top: 430px;
+                bottom: 40px;
+                left: 0;
                 z-index: 100;
                 background-color: rgb(255, 255, 255);
             }
             .hide {
                 display: none;
+            }
+
+            @media (max-width: 768px) {
+                #ruffle {
+                    width: 90vw;
+                    height: 90vw;
+                }
             }
         </style>
     </head>
@@ -41,42 +50,54 @@
         <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
         <script>
             var swfobject = {};
+            // Modified swfobject.embedSWF to make the player responsive
+            swfobject.embedSWF = function (
+                url,
+                contId /*, swfWidth, swfHeight */
+            ) {
+                var ruffle = window.RufflePlayer.newest();
+                var container = document.getElementById(contId);
 
-            swfobject.embedSWF = function (url, cont, width, height) {
-                var ruffle = window.RufflePlayer.newest(),
-                    player = Object.assign(
-                        document
-                            .getElementById(cont)
-                            .appendChild(ruffle.createPlayer()),
-                        {
-                            width: width,
-                            height: height,
-                            style:
-                                "width: " +
-                                width +
-                                "px; height: " +
-                                height +
-                                "px",
-                        }
+                if (!container) {
+                    console.error(
+                        "Ruffle container element not found:",
+                        contId
                     );
+                    return;
+                }
 
+                var player = container.appendChild(ruffle.createPlayer());
+
+                // Style the player to fill its container (#ruffle)
+                player.style.width = "100%";
+                player.style.height = "100%";
+
+                // Load the SWF file
+                // Ruffle will scale the SWF content to fit the player element's dimensions
                 player.load({ url: url });
             };
 
+            // Call embedSWF. The 500, 500 are now less critical for player element size,
+            // as CSS and the modified function control that. They could serve as hints for
+            // the SWF's native aspect ratio if Ruffle uses them.
             swfobject.embedSWF(
                 "./whack-your-boss-24-ways.swf",
                 "ruffle",
-                500,
-                500
+                500, // Original SWF base width (optional hint)
+                500 // Original SWF base height (optional hint)
             );
 
             setTimeout(function () {
                 var h = document.querySelector("#ruffle");
-                h.classList.add("hide");
+                if (h) {
+                    h.classList.add("hide");
+                }
             }, 8000);
             setTimeout(function () {
                 var h = document.querySelector("#ruffle");
-                h.classList.remove("hide");
+                if (h) {
+                    h.classList.remove("hide");
+                }
             }, 16000);
         </script>
     </body>
